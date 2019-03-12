@@ -9,4 +9,6 @@ calculated using trilateration.
 
 Team Members:
 - Ibrahim
+- Manav
+- Harshvardhan
 - Add ur name guys :)
