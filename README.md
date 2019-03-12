@@ -1,4 +1,12 @@
-# Indoor-positioning
-Project part of IEEE NITK-ENVISION 2019.The following project helps to determine the coordinates of an object with reference to 3 anchor points.
-We are using arduinos for RF transmition and receival and ultrasound for signal transmition for distance measurment between object and anchor points.
-Then the concept of Trilateration is used in order to determine the precise object coordinates.
+# Indoor-Postioning
+# IEEE NITK Envision 2018-19 Project
+
+TASK: To determine the precise location of a given object within a room.
+
+The distance of the object from three fixed points is determined using
+time delay between radio and sound waves. The location is then
+calculated using trilateration.
+
+Team Members:
+- Ibrahim
+- Add ur name guys :)
