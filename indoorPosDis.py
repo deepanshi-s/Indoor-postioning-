@@ -5,32 +5,7 @@ import numpy as np
 import bluetooth
 import sys
 import time
-'''
-#object pos
-_x = 0
-_y = 0
 
-#positions of transmitters
-## a -> x
-## b -> y
-a1 = 0
-a2 = 1
-a3 = 0.5
-
-b1 = 0
-b2 = 0
-b3 = 0.866
-
-fig = plt.figure()
-ax1 = fig.add_subplot(111)
-
-def refreshGraphData(i):
-    ax1.clear()
-    ax1.plot(_x, _y)
-
-ani = anim.FuncAnimation(fig, refreshGraphData, interval=1000)
-plt.show()
-'''
 
 nearby_devices = bluetooth.discover_devices()
 
@@ -49,11 +24,23 @@ port = 1
 sock = bluetooth.BluetoothSocket( bluetooth.RFCOMM )
 sock.connect((bd_addr, port))
 
-
+"""
 #initialize to arbitrary point
 d1 = 0.577
 d2 = 0.577
 d3 = 0.577
+
+"""
+
+a1=0
+b1=0
+
+a2=0
+b2=3
+
+a3=3
+b3=0
+
 
 #   data format
 #   _id - dist
@@ -78,7 +65,15 @@ while 1:
     coordinates = np.linalg.solve (A, B)
     _x = coordinates[0]
     _y = coordinates[1]
-    print(x, y)
-    #TODO: Add exception handler to exit loop
+    
+    print(_x, _y)
+    plt.clf()
+    plt.ylim(0,10)#value will be changed later
+    plt.ylim(0,10)
+    plt.plot(_x,_y)
+
+    check=input()
+    if(check=="c"||check=="C"):
+        break
 
 sock.close()
