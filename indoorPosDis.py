@@ -73,7 +73,7 @@ while 1:
     plt.plot(_x,_y)
 
     check=input()
-    if(check=="c"||check=="C"):
+    if check=="c"or check=="C":
         break
 
 sock.close()
