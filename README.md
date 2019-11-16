@@ -11,4 +11,8 @@ Team Members:
 - Ibrahim
 - Manav
 - Harshvardhan
-- Add ur name guys :)
+- Antony
+
+Mentors:
+- Rakshana
+- Deepanshi
