@@ -1,73 +1,50 @@
-//#define TRANSMITTER
-#define RECIEVER
-
 #include <SoftwareSerial.h>
 SoftwareSerial _softSerial(2, 3);
+SoftwareSerial bluetooth(6, 7);
 
-// Arduino digital pins
-#define LED_PIN 13
-
-#define SND_SPEED 343
-
-const int trg = 5;
-const int ech = 4;
+#define TRGG 4
+#define ECHO 5
 
 void setup()
 {
-  pinMode(LED_PIN, OUTPUT);
-  digitalWrite(LED_PIN, LOW);
+  pinMode(TRGG, OUTPUT);
+  pinMode(ECHO, INPUT);
+  digitalWrite(TRGG, LOW);
   
-  Serial.begin(9600);
-  _softSerial.begin(1200);  // Hardware supports up to 2400, but 1200 gives longer range
+  Serial.begin(115200);
+  bluetooth.begin(9600);
+  _softSerial.begin(300);  // Hardware supports up to 2400
+              //I found that lower baud rate improved accuracy,
+              //so I got 300 giving best results
 }
 
-#ifdef RECIEVER
 void loop()
 {
   unsigned int _id = readUInt(true);
-  Serial.print(_id);
-
   long int _dist = getDist();
-  Serial.print("-");
-  Serial.println(_dist);
-}
-#endif
 
-#ifdef TRANSMITTER
-void loop()
-{
-  static unsigned int i = 0;
-  writeUInt(i);
-  Serial.println(i);
-
-  genPulse();
+  // $ is used to identify packets by python
+  // I put # bcoz I think the serial sends n-1 chars from a char array, so we need an extra
+  String _data = "$" + String(_id) + "-" + String(_dist) + "#";
+  char data[_data.length()];                //softwareserial can only take a char array so we need to convert
+  _data.toCharArray(data, _data.length());
   
-  Serial.println(i);
-  i++;
-  if (i > 2)i = 0;
-  delay(1000);
-}
-#endif
-
-
-void genPulse()
-{
-  digitalWrite(trg, LOW);
-  delayMicroseconds(2);
-  digitalWrite(trg, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trg, LOW);
+  bluetooth.write(data);
+  Serial.println(data);
 }
 
 long int getDist()
 {
-  genPulse();
-
-  long duration = pulseIn(ech, HIGH);
-  return duration*0.034/2;
+  digitalWrite(TRGG, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRGG, LOW);
+  long duration = pulseIn(ECHO, HIGH);
+  return duration*0.034/2;            //TODO: Some stuff is wrong with this calculation
 }
 
 
+//This is unchanged, we can keep the entire signature and checksum also
+//there will be some packet loss, but here data accuracy is more important
 #define NETWORK_SIG_SIZE 3
 #define VAL_SIZE         2
 #define CHECKSUM_SIZE    1
@@ -76,17 +53,6 @@ long int getDist()
 // The network address byte and can be change if you want to run different devices in proximity to each other without interfearance
 #define NET_ADDR 5
 const byte g_network_sig[NETWORK_SIG_SIZE] = {0x8F, 0xAA, NET_ADDR};  // Few bytes used to initiate a transfer3
-
-// Sends an unsigned int over the RF network
-void writeUInt(unsigned int val)
-{
-  byte checksum = (val/256) ^ (val&0xFF);
-
-  _softSerial.write(0xF0);  // This gets reciever in sync with transmitter
-  _softSerial.write(g_network_sig, NETWORK_SIG_SIZE);
-  _softSerial.write((byte*)&val, VAL_SIZE);
-  _softSerial.write(checksum); //CHECKSUM_SIZE
-}
 
 // Receives an unsigned int over the RF network
 unsigned int readUInt(bool wait)
@@ -99,12 +65,10 @@ unsigned int readUInt(bool wait)
   {
     return 0xFFFF;
   }
-   
 
   while(pos < NETWORK_SIG_SIZE)
-
   { 
-    while(_softSerial.available() == 0); // Wait until something is avalible
+    while(_softSerial.available() == 0); // Wait until something is available
     c = _softSerial.read();
 
     if (c == g_network_sig[pos])
@@ -113,7 +77,7 @@ unsigned int readUInt(bool wait)
       {
         byte checksum;
 
-        while(_softSerial.available() < VAL_SIZE + CHECKSUM_SIZE); // Wait until something is avalible
+        while(_softSerial.available() < VAL_SIZE + CHECKSUM_SIZE); // Wait until something is available
         val      =  _softSerial.read();
         val      += ((unsigned int)_softSerial.read())*256;
         checksum =  _softSerial.read();
